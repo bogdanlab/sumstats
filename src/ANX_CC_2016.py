@@ -48,8 +48,8 @@ for line in sumstats_f:
     snp_id = cols[snp_id_idx]
     chrom = cols[chrom_idx]
     pos = cols[pos_idx]
-    effect_allele = cols[effect_allele_idx]
-    non_effect_allele = cols[non_effect_allele_idx]
+    effect_allele = cols[effect_allele_idx].upper()
+    non_effect_allele = cols[non_effect_allele_idx].upper()
     beta = cols[beta_idx]
     se = cols[se_idx]
     ntotal = cols[ntotal_idx]
@@ -69,7 +69,7 @@ for line in sumstats_f:
         continue
     
     # check for sanity of sample size
-    if ncase == 'NA' or ncontrol == 'NA':
+    if ntotal == 'NA':
         continue
 
     # get z score
