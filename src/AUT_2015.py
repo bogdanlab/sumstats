@@ -7,21 +7,22 @@ print "Huwenbo Shi"
 print "Command started at", cur_time
 
 # specify path to summary stats file here
-trait = 'ALZHEIMERS_2013'
+trait = 'AUT_2015'
+
 root_dir = '/u/project/pasaniuc/pasaniucdata/DATA/All_Summary_Statistics/0_Raw'
 sumstats_fnm = root_dir+'/{}/{}.txt'.format(trait, trait)
 out_fnm = './{}.txt.gz'.format(trait)
 
 # specify sample size here
-ncase = 17008
-ncontrol = 37154
+ncase = 5305
+ncontrol = 5305
 ntotal = ncase + ncontrol
 
 # create output file
 out = gzip.open('./'+out_fnm, 'w')
 
 # write the header
-out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tBETA\tSE\tN_CASE\tN_CONTROL\n')
+out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tOR\tSE\tP\tINFO\tFREQ\tN_CASE\tN_CONTROL\n')
 
 # iterate through the file
 flr = False
@@ -37,22 +38,28 @@ for line in sumstats_f:
     cols = line.strip().split()
 
     # specify indices of the fields
-    chrom_idx = 0
-    pos_idx = 1
-    snp_id_idx = 2
+    snp_id_idx = 0
+    chrom_idx = 1
+    pos_idx = 2
     effect_allele_idx = 3
     non_effect_allele_idx = 4
-    beta_idx = 5
+    or_idx = 5
     se_idx = 6
+    p_idx = 7
+    info_idx = 8
+    freq_idx = 9
 
     # parse out the fields
+    snp_id = cols[snp_id_idx]
     chrom = cols[chrom_idx]
     pos = cols[pos_idx]
-    snp_id = cols[snp_id_idx]
     effect_allele = cols[effect_allele_idx]
     non_effect_allele = cols[non_effect_allele_idx]
-    beta = cols[beta_idx]
+    odds_ratio = cols[or_idx]
     se = cols[se_idx]
+    pval = cols[p_idx]
+    info = cols[info_idx]
+    freq = cols[freq_idx]
 
     # check for sanity of alleles
     if len(effect_allele) != 1 or len(non_effect_allele) != 1:
@@ -61,12 +68,13 @@ for line in sumstats_f:
         continue
 
     # check for sanity of beta
-    if beta == 'NA' or se == 'NA':
-        print 'Removing SNP {} with beta and se {}, {}'.format(snp_id,beta,se)
+    if odds_ratio == 'NA' or se == 'NA':
+        print 'Removing SNP {} with OR and se {}, {}'.format(snp_id,
+            odds_ratio, se)
         continue
     
     # get z score
-    zscore = np.float(beta) / np.float(se)
+    zscore = np.log(np.float(odds_ratio)) / np.float(se)
     
     # check for sanity of z score
     if np.isnan(zscore) or np.isinf(zscore):
@@ -74,7 +82,7 @@ for line in sumstats_f:
         continue
 
     # construct the output line
-    # SNP CHR BP A1 A2 Z N BETA SE N_CASE N_CONTROL
+    # SNP CHR BP A1 A2 Z N OR SE P INFO FREQ N_CASE N_CONTROL
     outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
         snp_id,
         chrom,
@@ -83,8 +91,11 @@ for line in sumstats_f:
         non_effect_allele,
         zscore,
         ntotal,
-        beta,
+        odds_ratio,
         se,
+        pval,
+        info,
+        freq,
         ncase,
         ncontrol
     )
