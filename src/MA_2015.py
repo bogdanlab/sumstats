@@ -60,7 +60,7 @@ for line in sumstats_f:
     
     # check if snp is in legend
     if snp_id not in legend:
-        print 'SNP {} not in 1000G legend'.format(snpid)
+        print 'SNP {} not in 1000G legend'.format(snp_id)
         continue
     
     # get other information
