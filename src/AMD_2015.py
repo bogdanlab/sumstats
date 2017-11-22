@@ -10,7 +10,7 @@ print "Command started at", cur_time
 # specify path to summary stats file here
 trait = 'AMD_2015'
 root_dir = '/u/project/pasaniuc/pasaniucdata/DATA/All_Summary_Statistics/0_Raw'
-sumstats_fnm = root_dir+'/{}/{}.txt'.format(trait)
+sumstats_fnm = root_dir+'/{}/{}.txt'.format(trait, trait)
 out_fnm = '{}.txt.gz'.format(trait)
 
 # create output file
@@ -65,6 +65,12 @@ for line in sumstats_f:
         print 'Removing SNP {} with pval {}'.format(snp_id, pval)
         continue
     
+    # check for sanity of sample size
+    if ncase == 'NA' or ncontrol == 'NA':
+        continue
+    
+    ntotal = int(ncase) + int(ncontrol)
+
     # get z score
     zscore = ptoz(float(pval), sign)
     

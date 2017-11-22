@@ -9,7 +9,7 @@ print "Command started at", cur_time
 # specify path to summary stats file here
 trait = 'ALZHEIMERS_2013'
 root_dir = '/u/project/pasaniuc/pasaniucdata/DATA/All_Summary_Statistics/0_Raw'
-sumstats_fnm = root_dir+'/{}/{}.txt'.format(trait)
+sumstats_fnm = root_dir+'/{}/{}.txt'.format(trait, trait)
 out_fnm = './{}.txt.gz'.format(trait)
 
 # specify sample size here
