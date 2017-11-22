@@ -33,4 +33,4 @@ for i in range(1,23):
     all_chrom = all_chrom[['SNP', 'CHR', 'BP']]
     all_chrom = all_chrom.drop_duplicates('SNP', keep=False)
     all_chrom = all_chrom.drop_duplicates('BP', keep=False)
-    all_chrom.to_csv('1000G_SNP_CHR_BP.txt', mode='a', '\t', header=False, index=None)
+    all_chrom.to_csv('1000G_SNP_CHR_BP.txt', '\t', mode='a', header=False, index=None)
