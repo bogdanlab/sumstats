@@ -82,7 +82,7 @@ for line in sumstats_f:
 
     # construct the output line
     # SNP CHR BP A1 A2 Z N BETA SE P FREQ
-    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
         snp_id,
         chrom,
         pos,
