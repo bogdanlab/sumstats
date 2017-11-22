@@ -45,7 +45,7 @@ for line in sumstats_f:
         continue
 
     # split up the line into columns
-    cols = line.strip().split(',')
+    cols = line.strip().split()
 
     # specify indices of the fields
     snp_id_idx = 0
