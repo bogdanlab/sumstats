@@ -33,14 +33,14 @@ mean_n = np.mean(sumstats['N'])
 sd_n = np.std(sumstats['N'])
 print 'Sample size before: {} (SD {})'.format(mean_n, sd_n)
 n_idx = np.where((sumstats['N']>mean_n+2.0*sd_n) | \
-                 (sumstats['N']>mean_n-2.0*sd_n))
+                 (sumstats['N']>mean_n-2.0*sd_n))[0]
 sumstats = sumstats.drop(n_idx)
 sumstats = sumstats.reset_index(drop=True)
-    print 'Droped {} SNPs with very large or small sample size'.format(
-        sa_idx.shape[0])
+print 'Droped {} SNPs with very large or small sample size'.format(
+    n_idx.shape[0])
 mean_n = np.mean(sumstats['N'])
 sd_n = np.std(sumstats['N'])
 print 'Sample size after: {} (SD {})'.format(mean_n, sd_n)
 
 # write output
-sumstats = to_csv(output_file, sep='\t', index=False, compression='gzip')
+sumstats.to_csv(output_file, sep='\t', index=False, compression='gzip')
