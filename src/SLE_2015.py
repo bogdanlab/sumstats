@@ -66,6 +66,8 @@ for line in sumstats_f:
         continue
     
     # get z score
+    if not isfloat(odds_ratio):
+        continue
     sign = '-'
     log_or = np.log(np.float(odds_ratio))
     if log_or > 0: sign = '+'
