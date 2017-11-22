@@ -1,8 +1,10 @@
-import gzip
+import gzip, time
 import numpy as np
 
-# print out person responsible for back tracking
-print "Huwenbo Shi; November 21, 2017; 4:36 PM"
+# print out time info
+cur_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
+print "Huwenbo Shi"
+print "Command started at", cur_time
 
 # specify path to summary stats file here
 root_dir = '/u/project/pasaniuc/pasaniucdata/DATA/All_Summary_Statistics/0_Raw'
@@ -94,3 +96,7 @@ sumstats_f.close()
 
 # close the output
 out.close()
+
+# print out time info
+cur_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
+print "Command finished at", cur_time
