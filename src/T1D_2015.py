@@ -46,6 +46,7 @@ for line in sumstats_f:
     snp_id = cols[snp_id_idx]
     chrom = cols[chrom_idx]
     pos = cols[pos_idx]
+    if cols[allele_idx].find('/') >= 0: continue
     alleles = cols[allele_idx].split('>')
     effect_allele = alleles[1].upper()
     non_effect_allele = alleles[0].upper()
