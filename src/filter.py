@@ -8,6 +8,24 @@ output_file = sys.argv[2]
 
 # load gwas data
 sumstats = pd.read_table(input_file, delim_whitespace=True)
+sumstats['CHR'] = sumstats['CHR'].astype(np.unicode)
+
+# drop non-autosome snps
+nsnp_orig = sumstats.shape[0]
+sumstats = sumstats[sumstats.CHR.apply(lambda x: x.isnumeric())]
+sumstats = sumstats.reset_index(drop=True)
+ndropped = sumstats.shape[0]-nsnp_orig
+print 'Dropped {} non-autosommal SNPs'.format(ndropped)
+
+# remove duplicates
+nsnp_orig = sumstats.shape[0]
+sumstats['CHR'] = sumstats['CHR'].astype(int)
+sumstats = sumstats.drop_duplicates('SNP', keep=False)
+sumstats = sumstats.drop_duplicates('BP', keep=False)
+sumstats = sumstats.sort_values(by=['CHR', 'BP'])  
+sumstats = sumstats.reset_index(drop=True)
+ndropped = sumstats.shape[0]-nsnp_orig
+print 'Dropped {} SNPs with duplicated ID or BP'.format(ndropped)
 
 # filter out snps with strand ambiguous alleles
 ambiguous = ["AT", "CG", "TA", "GC"]
@@ -32,8 +50,8 @@ if 'INFO' in sumstats.columns:
 mean_n = np.mean(sumstats['N'])
 sd_n = np.std(sumstats['N'])
 print 'Sample size before: {} (SD {})'.format(mean_n, sd_n)
-n_idx = np.where((sumstats['N']>mean_n+2.0*sd_n) | \
-                 (sumstats['N']>mean_n-2.0*sd_n))[0]
+n_idx = np.where((sumstats['N']>mean_n+5.0*sd_n) | \
+                 (sumstats['N']>mean_n-5.0*sd_n))[0]
 sumstats = sumstats.drop(n_idx)
 sumstats = sumstats.reset_index(drop=True)
 print 'Droped {} SNPs with very large or small sample size'.format(
