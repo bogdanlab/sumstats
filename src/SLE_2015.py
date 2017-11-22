@@ -8,20 +8,20 @@ print "Huwenbo Shi"
 print "Command started at", cur_time
 
 # specify path to summary stats file here
-trait = 'RA_ASN_2014'
+trait = 'SLE_2015'
 root_dir = '/u/project/pasaniuc/pasaniucdata/DATA/All_Summary_Statistics/0_Raw'
 sumstats_fnm = root_dir+'/{}/{}.txt'.format(trait, trait)
 out_fnm = '{}.txt.gz'.format(trait)
 
-ncase = 4873
-ncontrol = 17642
+ncase = 4036
+ncontrol = 6959
 ntotal = ncase + ncontrol
 
 # create output file
 out = gzip.open('./'+out_fnm, 'w')
 
 # write the header
-out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tP\tN_CASE\tN_CONTROL\t\n')
+out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tOR\tP\tN_CASE\tN_CONTROL\t\n')
 
 # iterate through the file
 flr = False
@@ -40,19 +40,19 @@ for line in sumstats_f:
     chrom_idx = 1
     pos_idx = 2
     snp_id_idx = 0
-    effect_allele_idx = 3
-    non_effect_allele_idx = 4
-    or_idx = 5
-    pval_idx = 8
+    allele_idx = 7
+    or_idx = 4
+    pval_idx = 3
 
     # parse out the fields
     chrom = cols[chrom_idx]
     pos = cols[pos_idx]
     snp_id = cols[snp_id_idx]
-    effect_allele = cols[effect_allele_idx]
-    non_effect_allele = cols[non_effect_allele_idx]
+    allele = cols[allele_idx]
     odds_ratio = cols[or_idx]
     pval = cols[pval_idx]
+    effect_allele = allele.split('>')[1]
+    non_effect_allele = allele.split('>')[0]
 
     # check for sanity of alleles
     if len(effect_allele) != 1 or len(non_effect_allele) != 1:
@@ -77,8 +77,8 @@ for line in sumstats_f:
         continue
 
     # construct the output line
-    # SNP CHR BP A1 A2 Z N P N_CASE N_CONTROL
-    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+    # SNP CHR BP A1 A2 Z N OR P N_CASE N_CONTROL
+    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
         snp_id,
         chrom,
         pos,
@@ -86,6 +86,7 @@ for line in sumstats_f:
         non_effect_allele,
         zscore,
         ntotal,
+        odds_ratio,
         pval,
         ncase,
         ncontrol
