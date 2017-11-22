@@ -1,4 +1,8 @@
 import gzip
+import numpy as np
+
+# print out person responsible for back tracking
+print "Huwenbo Shi; November 21, 2017; 4:36 PM"
 
 # specify path to summary stats file here
 root_dir = '/u/project/pasaniuc/pasaniucdata/DATA/All_Summary_Statistics/0_Raw'
@@ -49,28 +53,34 @@ for line in sumstats_f:
 
     # check for sanity of alleles
     if len(effect_allele) != 1 or len(non_effect_allele) != 1:
+        print 'Removing SNP {} with alleles {}, {}'.format(snp_id,
+            effect_allele, non_effect_allele)
         continue
 
     # check for sanity of beta
     if beta == 'NA' or se == 'NA':
+        print 'Removing SNP {} with beta and se {}, {}'.format(snp_id,beta,se)
         continue
     
     # get z score
-    zscore = beta / se
+    zscore = np.float(beta) / np.float(se)
     
     # check for sanity of z score
     if np.isnan(zscore) or np.isinf(zscore):
+        print 'Removing SNP {} with Z-score {}'.format(snp_id, zscore)
         continue
 
     # construct the output line
     # SNP CHR BP A1 A2 Z N BETA SE N_CONTROLS N_CASES
     outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
-        snpid,
+        snp_id,
         chrom,
         pos,
         effect_allele,
         non_effect_allele,
         zscore,
+        beta,
+        se,
         ntotal,
         ncase,
         ncontrol
