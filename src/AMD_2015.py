@@ -12,15 +12,15 @@ sumstats_fnm = root_dir+'/ALZHEIMERS_2013/ALZHEIMERS_2013.txt'
 out_fnm = 'ALZHEIMERS_2013.txt.gz'
 
 # specify sample size here
-ncase = 37154
-ncontrol = 17008
+ncase = 17008
+ncontrol = 37154
 ntotal = ncase + ncontrol
 
 # create output file
 out = gzip.open('./'+out_fnm, 'w')
 
 # write the header
-out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tBETA\tSE\tN_CONTROLS\tN_CASES\t\n')
+out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tBETA\tSE\tN_CASE\tN_CONTROL\t\n')
 
 # iterate through the file
 flr = False
@@ -73,7 +73,7 @@ for line in sumstats_f:
         continue
 
     # construct the output line
-    # SNP CHR BP A1 A2 Z N BETA SE N_CONTROLS N_CASES
+    # SNP CHR BP A1 A2 Z N BETA SE N_CASE N_CONTROL
     outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
         snp_id,
         chrom,
