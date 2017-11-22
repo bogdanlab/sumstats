@@ -1,5 +1,6 @@
 import gzip, time
 import numpy as np
+from utils import *
 
 # print out time info
 cur_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
@@ -59,13 +60,13 @@ for line in sumstats_f:
             effect_allele, non_effect_allele)
         continue
 
-    # check for sanity of beta
-    if beta == 'NA' or se == 'NA':
-        print 'Removing SNP {} with beta and se {}, {}'.format(snp_id,beta,se)
+    # check for sanity of pval
+    if pval == 'NA':
+        print 'Removing SNP {} with pval {}'.format(snp_id, pval)
         continue
     
     # get z score
-    zscore = np.float(beta) / np.float(se)
+    zscore = ptoz(float(pval), sign)
     
     # check for sanity of z score
     if np.isnan(zscore) or np.isinf(zscore):
@@ -73,16 +74,15 @@ for line in sumstats_f:
         continue
 
     # construct the output line
-    # SNP CHR BP A1 A2 Z N BETA SE N_CASE N_CONTROL
-    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+    # SNP CHR BP A1 A2 Z N P N_CASE N_CONTROL
+    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
         snp_id,
         chrom,
         pos,
         effect_allele,
         non_effect_allele,
         zscore,
-        beta,
-        se,
+        pval,
         ntotal,
         ncase,
         ncontrol
