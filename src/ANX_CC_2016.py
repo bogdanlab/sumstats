@@ -1,5 +1,6 @@
 import gzip, time
 import numpy as np
+from utils import *
 
 # print out time info
 cur_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
@@ -7,21 +8,16 @@ print "Huwenbo Shi"
 print "Command started at", cur_time
 
 # specify path to summary stats file here
-trait = 'ALZHEIMERS_2013'
+trait = 'ANX_CC_2016'
 root_dir = '/u/project/pasaniuc/pasaniucdata/DATA/All_Summary_Statistics/0_Raw'
 sumstats_fnm = root_dir+'/{}/{}.txt'.format(trait, trait)
-out_fnm = './{}.txt.gz'.format(trait)
-
-# specify sample size here
-ncase = 17008
-ncontrol = 37154
-ntotal = ncase + ncontrol
+out_fnm = '{}.txt.gz'.format(trait)
 
 # create output file
 out = gzip.open('./'+out_fnm, 'w')
 
 # write the header
-out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tBETA\tSE\tN_CASE\tN_CONTROL\n')
+out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tBETA\tSE\tN_CASE\tN_CONTROL\t\n')
 
 # iterate through the file
 flr = False
@@ -37,13 +33,15 @@ for line in sumstats_f:
     cols = line.strip().split()
 
     # specify indices of the fields
-    chrom_idx = 0
-    pos_idx = 1
-    snp_id_idx = 2
+    chrom_idx = 1
+    pos_idx = 2
+    snp_id_idx = 0
     effect_allele_idx = 3
     non_effect_allele_idx = 4
-    beta_idx = 5
-    se_idx = 6
+    ncase_idx = 5
+    ncontrol_idx = 6
+    pval_idx = 7
+    sign_idx = 8
 
     # parse out the fields
     chrom = cols[chrom_idx]
@@ -51,8 +49,10 @@ for line in sumstats_f:
     snp_id = cols[snp_id_idx]
     effect_allele = cols[effect_allele_idx]
     non_effect_allele = cols[non_effect_allele_idx]
-    beta = cols[beta_idx]
-    se = cols[se_idx]
+    ncase = cols[ncase_idx]
+    ncontrol = cols[ncontrol_idx]
+    pval = cols[pval_idx]
+    sign = cols[sign_idx]
 
     # check for sanity of alleles
     if len(effect_allele) != 1 or len(non_effect_allele) != 1:
@@ -60,13 +60,19 @@ for line in sumstats_f:
             effect_allele, non_effect_allele)
         continue
 
-    # check for sanity of beta
-    if beta == 'NA' or se == 'NA':
-        print 'Removing SNP {} with beta and se {}, {}'.format(snp_id,beta,se)
+    # check for sanity of pval
+    if pval == 'NA':
+        print 'Removing SNP {} with pval {}'.format(snp_id, pval)
         continue
     
+    # check for sanity of sample size
+    if ncase == 'NA' or ncontrol == 'NA':
+        continue
+    
+    ntotal = int(ncase) + int(ncontrol)
+
     # get z score
-    zscore = np.float(beta) / np.float(se)
+    zscore = ptoz(float(pval), sign)
     
     # check for sanity of z score
     if np.isnan(zscore) or np.isinf(zscore):
@@ -74,8 +80,8 @@ for line in sumstats_f:
         continue
 
     # construct the output line
-    # SNP CHR BP A1 A2 Z N BETA SE N_CASE N_CONTROL
-    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+    # SNP CHR BP A1 A2 Z N P N_CASE N_CONTROL
+    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
         snp_id,
         chrom,
         pos,
@@ -83,8 +89,7 @@ for line in sumstats_f:
         non_effect_allele,
         zscore,
         ntotal,
-        beta,
-        se,
+        pval,
         ncase,
         ncontrol
     )

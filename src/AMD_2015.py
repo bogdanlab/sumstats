@@ -17,7 +17,7 @@ out_fnm = '{}.txt.gz'.format(trait)
 out = gzip.open('./'+out_fnm, 'w')
 
 # write the header
-out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tBETA\tSE\tN_CASE\tN_CONTROL\t\n')
+out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tP\tN_CASE\tN_CONTROL\t\n')
 
 # iterate through the file
 flr = False
@@ -88,8 +88,8 @@ for line in sumstats_f:
         effect_allele,
         non_effect_allele,
         zscore,
-        pval,
         ntotal,
+        pval,
         ncase,
         ncontrol
     )
