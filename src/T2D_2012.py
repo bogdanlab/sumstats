@@ -8,14 +8,10 @@ print "Huwenbo Shi"
 print "Command started at", cur_time
 
 # specify path to summary stats file here
-trait = 'BIP_2012'
+trait = 'T2D_2012'
 root_dir = '/u/project/pasaniuc/pasaniucdata/DATA/All_Summary_Statistics/0_Raw'
 sumstats_fnm = root_dir+'/{}/{}.txt'.format(trait, trait)
 out_fnm = './{}.txt.gz'.format(trait)
-
-ncase = 7481
-ncontrol = 9250
-ntotal = ncase + ncontrol
 
 # load legend
 legend = dict()
@@ -34,7 +30,7 @@ print '{} SNPs in legend'.format(len(legend))
 out = gzip.open('./'+out_fnm, 'w')
 
 # write the header
-out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tOR\tSE\tINFO\tP\tFREQ\tN_CASE\tN_CONTROL\n')
+out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tOR\tP\tN_CASE\tN_CONTROL\n')
 
 # iterate through the file
 flr = False
@@ -53,11 +49,10 @@ for line in sumstats_f:
     snp_id_idx = 0
     effect_allele_idx = 3
     non_effect_allele_idx = 4
-    or_idx = 5
-    se_idx = 6
-    freq_idx = 10
-    pval_idx = 7
-    info_idx = 8
+    or_idx = 6
+    pval_idx = 5
+    ncase_idx = 9
+    ncontrol_idx = 10
 
     # parse out the fields
     snp_id = cols[snp_id_idx]
@@ -73,10 +68,10 @@ for line in sumstats_f:
     effect_allele = cols[effect_allele_idx].upper()
     non_effect_allele = cols[non_effect_allele_idx].upper()
     odds_ratio = cols[or_idx]
-    se = cols[se_idx]
     pval = cols[pval_idx]
-    freq = cols[freq_idx]
-    info = cols[info_idx]
+    ncase = cols[ncase_idx]
+    ncontrol = cols[ncontrol_idx]
+    ntotal = int(ncase)+int(ncontrol)
 
     # check for sanity of alleles
     if len(effect_allele) != 1 or len(non_effect_allele) != 1:
@@ -85,15 +80,17 @@ for line in sumstats_f:
         continue
 
     # check for sanity of beta
-    if not isfloat(odds_ratio) or odds_ratio == 'NA' or se == 'NA':
+    if not isfloat(odds_ratio) or odds_ratio == 'NA':
         print 'Removing SNP {} with OR and SE {}, {}'.format(snp_id,
-            odds_ratio, se)
+            odds_ratio)
         continue
     
     # get z score
     if not isfloat(odds_ratio):
         continue
-    zscore = np.log(np.float(odds_ratio)) / np.float(se)
+    sign = '-'
+    if np.log(np.float(odds_ratio)) > 0: sign = '+'
+    zscore =  ptoz(np.float(pval), sign)
     
     # check for sanity of z score
     if np.isnan(zscore) or np.isinf(zscore):
@@ -101,8 +98,8 @@ for line in sumstats_f:
         continue
 
     # construct the output line
-    # SNP CHR BP A1 A2 Z N OR SE INFO P FREQ N_CASE N_CONTROL
-    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'\
+    # SNP CHR BP A1 A2 Z N OR P N_CASE N_CONTROL
+    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'\
     .format(
         snp_id,
         chrom,
@@ -112,10 +109,7 @@ for line in sumstats_f:
         zscore,
         ntotal,
         odds_ratio,
-        se,
-        info,
         pval,
-        freq,
         ncase,
         ncontrol
     )
