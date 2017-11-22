@@ -7,14 +7,10 @@ print "Huwenbo Shi"
 print "Command started at", cur_time
 
 # specify path to summary stats file here
+trait = 'AMD_2015'
 root_dir = '/u/project/pasaniuc/pasaniucdata/DATA/All_Summary_Statistics/0_Raw'
-sumstats_fnm = root_dir+'/ALZHEIMERS_2013/ALZHEIMERS_2013.txt'
-out_fnm = 'ALZHEIMERS_2013.txt.gz'
-
-# specify sample size here
-ncase = 17008
-ncontrol = 37154
-ntotal = ncase + ncontrol
+sumstats_fnm = root_dir+'/{}/{}.txt'.format(trait)
+out_fnm = '{}.txt.gz'.format(trait)
 
 # create output file
 out = gzip.open('./'+out_fnm, 'w')
@@ -36,13 +32,15 @@ for line in sumstats_f:
     cols = line.strip().split()
 
     # specify indices of the fields
-    chrom_idx = 0
-    pos_idx = 1
-    snp_id_idx = 2
+    chrom_idx = 1
+    pos_idx = 2
+    snp_id_idx = 0
     effect_allele_idx = 3
     non_effect_allele_idx = 4
-    beta_idx = 5
-    se_idx = 6
+    ncase_idx = 5
+    ncontrol_idx = 6
+    pval_idx = 7
+    sign_idx = 8
 
     # parse out the fields
     chrom = cols[chrom_idx]
@@ -50,8 +48,10 @@ for line in sumstats_f:
     snp_id = cols[snp_id_idx]
     effect_allele = cols[effect_allele_idx]
     non_effect_allele = cols[non_effect_allele_idx]
-    beta = cols[beta_idx]
-    se = cols[se_idx]
+    ncase = cols[ncase_idx]
+    ncontrol = cols[ncontrol_idx]
+    pval = cols[pval_idx]
+    sign = cols[sign_idx]
 
     # check for sanity of alleles
     if len(effect_allele) != 1 or len(non_effect_allele) != 1:
