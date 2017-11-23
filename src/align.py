@@ -76,7 +76,7 @@ for line in input_file:
     BP = cols[2]
     A1 = cols[3]
     A2 = cols[4]
-    Z = cols[5]
+    Z = float(cols[5])
 
     #########################################################################
     # make sure the snp info matched legend
@@ -95,21 +95,54 @@ for line in input_file:
     #######################################################################
     # in case they are equivalent
     if A1A2 in equiv[leg_A1A2]:
+        
+        # keep the allele
         cols[3] = legend[SNP]['A1']
         cols[4] = legend[SNP]['A2']
+        
+        # write output
         output_file.write('\t'.join(cols)+'\n')
 
     # in case they are reversed
     elif A1A2 in reverse[leg_A1A2]:
-        
+
+        # flip the allele
+        cols[3] = legend[SNP]['A2']
+        cols[4] = legend[SNP]['A1']
+
+        # flip z score
+        cols[5] = str(-1.0*Z)
+
+        # flip beta if in header
+        if 'BETA' in header:
+            idx = header_idx['BETA']
+            beta = cols[idx]
+            if isfloat(beta):
+                cols[idx] = str(-1.0*float(beta))
+
+        # flip or if in header
+        if 'OR' in header:
+            idx = header_idx['OR']
+            OR = cols[idx]
+            if isfloat(OR):
+                cols[idx] = str(1.0/float(OR))
+
+        # flip freq if in header
+        if 'FREQ' in header:
+            idx = header_idx['FREQ']
+            FREQ = cols[idx]
+            if isfloat(FREQ):
+                cols[idx] = str(1.0-float(FREQ))
+
+        # write output
+        output_file.write('\t'.join(cols)+'\n')
+
     # doesn't match
     else:
+        print "{} dosn't have matched allele".format(SNP)
         continue
 
-    #if a1a0 in reverse[a1a2]: flip.append(i)
-    #        elif a1a0 in equiv[a1a2]: pass
-    #        else: filt.append(i)
-
+# close files
 input_file.close()
 output_file.close()
 
