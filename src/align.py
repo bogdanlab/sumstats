@@ -28,6 +28,9 @@ reverse["TG"] = set(["CA", "GT", "GA", "CT"])
 reverse["GA"] = set(["TC", "AG", "AC", "TG"])
 reverse["GT"] = set(["AC", "TG", "TC", "AG"])
 
+# define strand ambiguous snp
+ambiguous = set(["AT", "CG", "TA", "GC"])
+
 # print out time info
 cur_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
 print "Huwenbo Shi"
@@ -45,10 +48,6 @@ for line in legend_file:
     a1 = cols[3]
     a2 = cols[4]
     legend[snp] = {'CHR': chrom, 'BP': bp, 'A1': a1, 'A2': a2}
-    
-    # for debugging only
-    if chrom == '2':
-        break
 legend_file.close()
 print '{} SNPs loaded from legend'.format(len(legend))
 
@@ -91,7 +90,11 @@ for line in input_file:
     # match allele encoding
     A1A2 = A1+A2
     leg_A1A2 = legend[SNP]['A1']+legend[SNP]['A2']
-    
+    if leg_A1A2 in ambiguous:
+        print '{} has allele {} in GWAS and {} in legend'.format(SNP,
+            A1A2, leg_A1A2)
+        continue
+
     #######################################################################
     # in case they are equivalent
     if A1A2 in equiv[leg_A1A2]:
@@ -105,6 +108,8 @@ for line in input_file:
 
     # in case they are reversed
     elif A1A2 in reverse[leg_A1A2]:
+
+        print '{} has allele reversed'.format(SNP)
 
         # flip the allele
         cols[3] = legend[SNP]['A2']
