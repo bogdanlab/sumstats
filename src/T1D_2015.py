@@ -87,8 +87,8 @@ for line in sumstats_f:
         non_effect_allele,
         zscore,
         ntotal,
-        odds_ratio,
         pval,
+        odds_ratio
     )
 
     # write the output
