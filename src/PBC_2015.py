@@ -66,6 +66,10 @@ for line in sumstats_f:
     # get other information
     chrom = legend[snp_id][0]
     pos = legend[snp_id][1]
+    
+    if cols[allele_idx].find('>') != 1:
+        continue
+    
     alleles = cols[allele_idx].split('>')
     effect_allele = alleles[1].upper()
     non_effect_allele = alleles[0].upper()
