@@ -135,9 +135,12 @@ for line in input_file:
         # flip freq if in header
         if 'FREQ' in header:
             idx = header_idx['FREQ']
-            FREQ = cols[idx]
-            if isfloat(FREQ):
-                cols[idx] = str(1.0-float(FREQ))
+            if idx >= len(cols):
+                cols.append('.')
+            else:
+                FREQ = cols[idx]
+                if isfloat(FREQ):
+                    cols[idx] = str(1.0-float(FREQ))
 
         # write output
         output_file.write('\t'.join(cols)+'\n')
