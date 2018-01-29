@@ -16,6 +16,20 @@ ncase = 7699
 ncontrol = 18327
 ntot = ncase + ncontrol
 
+
+# load legend
+legend = dict()
+legend_fnm = '/u/project/pasaniuc/pasaniucdata/DATA/All_Summary_Statistics/2_Final_Allele_Fixed/other/1000G_SNP_CHR_BP.txt'
+legend_f = open(legend_fnm, 'r')
+for line in legend_f:
+    cols = line.strip().split()
+    snp = cols[0]
+    chrom = cols[1]
+    bp = cols[2]
+    legend[chrom+':'+bp] = snp
+legend_f.close()
+print '{} SNPs in legend'.format(len(legend))
+
 # create output file
 out = gzip.open('./'+out_fnm, 'w')
 
@@ -48,7 +62,11 @@ for line in sumstats_f:
     # parse out the fields
     chrom = cols[chrom_idx]
     pos = cols[pos_idx]
-    snp_id = cols[snp_id_idx]
+    snp_key = chrom+':'+pos
+    if snp_key not in legend:
+        continue
+    else:
+        snp_id = legend[snp_key]
     effect_allele = cols[effect_allele_idx]
     non_effect_allele = cols[non_effect_allele_idx]
     beta = np.log(np.float(cols[beta_idx]))
