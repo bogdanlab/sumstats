@@ -7,23 +7,18 @@ print "Huwenbo Shi"
 print "Command started at", cur_time
 
 # specify path to summary stats file here
-trait = 'MDD_ASN_2015'
-
+trait = 'BMI_EAS_2017'
 root_dir = '/u/project/pasaniuc/pasaniucdata/DATA/All_Summary_Statistics/0_Raw'
 sumstats_fnm = root_dir+'/{}/{}.txt'.format(trait, trait)
 out_fnm = './{}.txt.gz'.format(trait)
 
-# specify sample size here
-ncase = 5303
-ncontrol = 5337
-ntotal = ncase + ncontrol
-
 # create output file
 out = gzip.open('./'+out_fnm, 'w')
 
+ntot = 158284
+
 # write the header
-# CHR BP.GRCh37 RSID REF_ALLELE ALT_ALLELE FRQ_ALT.1KGP_ASN_n286 INFO.plink OR.logistic SE P.lmm
-out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tOR\tSE\tP\tINFO\tN_CASE\tN_CONTROL\n')
+out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tFREQ\tBETA\tSE\tP\n')
 
 # iterate through the file
 flr = False
@@ -39,26 +34,27 @@ for line in sumstats_f:
     cols = line.strip().split()
 
     # specify indices of the fields
-    snp_id_idx = 2
-    chrom_idx = 0
-    pos_idx = 1
+    # SNP CHR BP A1 A2 Freq1.Hapmap b se p N
+    chrom_idx = 1
+    pos_idx = 2
+    snp_id_idx = 0
     effect_allele_idx = 4
     non_effect_allele_idx = 3
-    or_idx = 7
+    beta_idx = 7
     se_idx = 8
+    freq_idx = 5
     pval_idx = 9
-    info_idx = 6
 
     # parse out the fields
-    snp_id = cols[snp_id_idx]
-    chrom = cols[chrom_idx].replace('chr','')
+    chrom = cols[chrom_idx]
     pos = cols[pos_idx]
+    snp_id = cols[snp_id_idx]
     effect_allele = cols[effect_allele_idx]
     non_effect_allele = cols[non_effect_allele_idx]
-    odds_ratio = cols[or_idx]
+    beta = cols[beta_idx]
     se = cols[se_idx]
+    freq = cols[freq_idx]
     pval = cols[pval_idx]
-    info = cols[info_idx]
 
     # check for sanity of alleles
     if len(effect_allele) != 1 or len(non_effect_allele) != 1:
@@ -67,13 +63,12 @@ for line in sumstats_f:
         continue
 
     # check for sanity of beta
-    if odds_ratio == 'NA' or se == 'NA':
-        print 'Removing SNP {} with OR and se {}, {}'.format(snp_id,
-            odds_ratio, se)
+    if beta == 'NA' or se == 'NA':
+        print 'Removing SNP {} with beta and se {}, {}'.format(snp_id,beta,se)
         continue
     
     # get z score
-    zscore = np.log(np.float(odds_ratio)) / np.float(se)
+    zscore = np.float(beta) / np.float(se)
     
     # check for sanity of z score
     if np.isnan(zscore) or np.isinf(zscore):
@@ -81,22 +76,19 @@ for line in sumstats_f:
         continue
 
     # construct the output line
-    # SNP CHR BP A1 A2 Z N OR SE P INFO N_CASE N_CONTROL
-    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'\
-    .format(
+    # SNP CHR BP A1 A2 Z N FREQ BETA SE P
+    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
         snp_id,
         chrom,
         pos,
         effect_allele,
         non_effect_allele,
         zscore,
-        ntotal,
-        odds_ratio,
+        ntot,
+        freq,
+        beta,
         se,
-        pval,
-        info,
-        ncase,
-        ncontrol
+        pval
     )
 
     # write the output

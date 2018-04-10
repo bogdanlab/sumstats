@@ -109,11 +109,13 @@ for line in input_file:
     # in case they are reversed
     elif A1A2 in reverse[leg_A1A2]:
 
-        print '{} has allele reversed'.format(SNP)
+        print '{} has allele reversed {} {} {} {}'.format(SNP, A1A2, leg_A1A2, cols[3], cols[4])
 
         # flip the allele
-        cols[3] = legend[SNP]['A2']
-        cols[4] = legend[SNP]['A1']
+        cols[3] = leg_A1A2[0]
+        cols[4] = leg_A1A2[1]
+
+        print '{} has allele after reverse {} {}'.format(SNP, cols[3], cols[4])
 
         # flip z score
         cols[5] = str(-1.0*Z)
