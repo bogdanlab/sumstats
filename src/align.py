@@ -33,8 +33,8 @@ ambiguous = set(["AT", "CG", "TA", "GC"])
 
 # print out time info
 cur_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
-print "Huwenbo Shi"
-print "Command started at", cur_time
+print( "Huwenbo Shi")
+print( "Command started at", cur_time)
 
 ##############################################################################
 # load legend
@@ -49,7 +49,7 @@ for line in legend_file:
     a2 = cols[4]
     legend[snp] = {'CHR': chrom, 'BP': bp, 'A1': a1, 'A2': a2}
 legend_file.close()
-print '{} SNPs loaded from legend'.format(len(legend))
+print( '{} SNPs loaded from legend'.format(len(legend)))
 
 ##############################################################################
 # iterate through sumstats file
@@ -60,7 +60,9 @@ for line in input_file:
 
     # figure out header
     if flr == False:
-        output_file.write(line.strip()+'\n')
+        print(line)
+        line = line.strip()
+        output_file.write(line+'\n'.encode('ascii'))
         header = line.strip().split()
         header_idx = dict()
         for field in header:
@@ -80,19 +82,21 @@ for line in input_file:
     #########################################################################
     # make sure the snp info matched legend
     if SNP not in legend:
-        print '{} not in 1000G legend'.format(SNP)
+        print( '{} not in 1000G legend'.format(SNP))
         continue
     if CHR != legend[SNP]['CHR'] or BP != legend[SNP]['BP']:
-        print '{} does not match 1000G'.format(SNP)
+        print( '{} does not match 1000G'.format(SNP))
         continue
 
     ########################################################################
     # match allele encoding
     A1A2 = A1+A2
+    A1A2 = A1A2.decode()
     leg_A1A2 = legend[SNP]['A1']+legend[SNP]['A2']
+    leg_A1A2 = leg_A1A2.decode()
     if leg_A1A2 in ambiguous:
-        print '{} has allele {} in GWAS and {} in legend'.format(SNP,
-            A1A2, leg_A1A2)
+        print( '{} has allele {} in GWAS and {} in legend'.format(SNP,
+            A1A2, leg_A1A2))
         continue
 
     #######################################################################
@@ -104,18 +108,19 @@ for line in input_file:
         cols[4] = legend[SNP]['A2']
         
         # write output
-        output_file.write('\t'.join(cols)+'\n')
+        out_line = "\t".join([c.decode() if type(c)==bytes else c for c in cols])
+        output_file.write((out_line + "\n").encode())
 
     # in case they are reversed
     elif A1A2 in reverse[leg_A1A2]:
 
-        print '{} has allele reversed {} {} {} {}'.format(SNP, A1A2, leg_A1A2, cols[3], cols[4])
+        print( '{} has allele reversed {} {} {} {}'.format(SNP, A1A2, leg_A1A2, cols[3], cols[4]))
 
         # flip the allele
         cols[3] = leg_A1A2[0]
         cols[4] = leg_A1A2[1]
 
-        print '{} has allele after reverse {} {}'.format(SNP, cols[3], cols[4])
+        print( '{} has allele after reverse {} {}'.format(SNP, cols[3], cols[4]))
 
         # flip z score
         cols[5] = str(-1.0*Z)
@@ -145,11 +150,12 @@ for line in input_file:
                     cols[idx] = str(1.0-float(FREQ))
 
         # write output
-        output_file.write('\t'.join(cols)+'\n')
+        out_line = "\t".join([c.decode() if type(c)==bytes else c for c in cols])
+        output_file.write((out_line + "\n").encode())
 
     # doesn't match
     else:
-        print "{} dosn't have matched allele".format(SNP)
+        print( "{} dosn't have matched allele".format(SNP))
         continue
 
 # close files
@@ -158,4 +164,4 @@ output_file.close()
 
 # print out time info
 cur_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
-print "Command finished at", cur_time
+print( "Command finished at", cur_time)
