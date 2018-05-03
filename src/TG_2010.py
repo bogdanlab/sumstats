@@ -30,7 +30,7 @@ print '{} SNPs in legend'.format(len(legend))
 out = gzip.open('./'+out_fnm, 'w')
 
 # write the header
-out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tBETA\tSE\tP\n')
+out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tP\n')
 
 # iterate through the file
 flr = False
@@ -43,17 +43,16 @@ for line in sumstats_f:
         continue
 
     # split up the line into columns
-    cols = line.strip().split('\t')
+    cols = line.strip().split()
 
     # specify indices of the fields
-    # MarkerName      Allele1 Allele2 Weight  GC.Zscore       GC.Pvalue       Overall Direction       Effect  StdErr
+    # MarkerName      Allele1 Allele2 Weight  GC.Zscore       GC.Pvalue       Overall Direction
     snp_id_idx = 0
     effect_allele_idx = 1
     other_allele_idx = 2
     pval_idx = 5
-    beta_idx = 7
-    se_idx = 8
     ntot_idx = 3
+    zsc_idx = 4
 
     # parse out the fields
     snp_id = cols[snp_id_idx]
@@ -69,8 +68,6 @@ for line in sumstats_f:
     
     effect_allele = cols[effect_allele_idx].upper()
     other_allele = cols[other_allele_idx].upper()
-    beta = cols[beta_idx]
-    se = cols[se_idx]
     pval = cols[pval_idx]
     ntot = cols[ntot_idx]
 
@@ -80,14 +77,8 @@ for line in sumstats_f:
             effect_allele, non_effect_allele)
         continue
 
-    # check for sanity of beta
-    if (not isfloat(beta)) or (not isfloat(se)):
-        print 'Removing SNP {} with BETA and SE {}, {}'.format(snp_id,
-            beta, se)
-        continue
-    
     # get z score
-    zscore = np.float(beta)/np.float(se)
+    zscore = float(cols[zsc_idx])
     
     # check for sanity of z score
     if np.isnan(zscore) or np.isinf(zscore):
@@ -95,8 +86,8 @@ for line in sumstats_f:
         continue
 
     # construct the output line
-    # SNP CHR BP A1 A2 Z N BETA SE P
-    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+    # SNP CHR BP A1 A2 Z N P
+    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
         snp_id,
         chrom,
         pos,
@@ -104,8 +95,6 @@ for line in sumstats_f:
         other_allele,
         zscore,
         ntot,
-        beta,
-        se,
         pval
     )
 

@@ -43,7 +43,7 @@ for line in sumstats_f:
         continue
 
     # split up the line into columns
-    cols = line.strip().split('\t')
+    cols = line.strip().split()
 
     # specify indices of the fields
     # MarkerName      Allele1 Allele2 Weight  GC.Zscore       GC.Pvalue       Overall Direction       Effect  StdErr
@@ -51,8 +51,8 @@ for line in sumstats_f:
     effect_allele_idx = 1
     other_allele_idx = 2
     pval_idx = 5
-    beta_idx = 7
-    se_idx = 8
+    beta_idx = 8
+    se_idx = 9
     ntot_idx = 3
 
     # parse out the fields
