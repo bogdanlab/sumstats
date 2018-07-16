@@ -63,12 +63,14 @@ for line in input_file:
         print(line)
         line = line.strip()
         output_file.write(line+'\n'.encode('ascii'))
-        header = line.strip().split()
+        header = line.strip().decode('ascii').split()
         header_idx = dict()
         for field in header:
             header_idx[field] = header.index(field)
         flr = True
         continue
+
+    print(header)
 
     # check the columns
     cols = line.strip().split()
