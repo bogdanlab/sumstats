@@ -1,6 +1,5 @@
 import gzip, time
 import numpy as np
-from utils import *
 
 # print out time info
 cur_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
@@ -8,31 +7,16 @@ print "Huwenbo Shi"
 print "Command started at", cur_time
 
 # specify path to summary stats file here
-trait = 'CHILD_BMI_2015'
+trait = 'GP_PSY'
 root_dir = '/u/project/pasaniuc/pasaniucdata/DATA/All_Summary_Statistics/0_Raw'
 sumstats_fnm = root_dir+'/{}/{}.txt'.format(trait, trait)
-out_fnm = './{}.txt.gz'.format(trait)
-
-# CHR POS RSID EA NEA BETA SE P N
-
-# load legend
-legend = dict()
-legend_fnm = '/u/project/pasaniuc/pasaniucdata/DATA/All_Summary_Statistics/2_Final_Allele_Fixed/other/1000G_SNP_CHR_BP.txt'
-legend_f = open(legend_fnm, 'r')
-for line in legend_f:
-    cols = line.strip().split()
-    snp = cols[0]
-    chrom = cols[1]
-    bp = cols[2]
-    legend[snp] = (chrom, bp)
-legend_f.close()
-print '{} SNPs in legend'.format(len(legend))
+out_fnm = './{}.txt'.format(trait)
 
 # create output file
 out = gzip.open('./'+out_fnm, 'w')
 
 # write the header
-out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tP\tBETA\tSE\n')
+out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tFREQ\tBETA\tSE\tP\n')
 
 # iterate through the file
 flr = False
@@ -48,31 +32,29 @@ for line in sumstats_f:
     cols = line.strip().split()
 
     # specify indices of the fields
-    snp_id_idx = 2
-    eff_allele_idx = 3
-    noneff_allele_idx = 4
-    beta_idx = 5
-    se_idx = 6
-    pval_idx = 7
-    ntot_idx = 8
+    # SNP CHR BP A1 A2 Freq1.Hapmap b se p N
+    chrom_idx = 0
+    pos_idx = 2
+    snp_id_idx = 1
+    effect_allele_idx = 3
+    non_effect_allele_idx = 12
+    or_idx = 6
+    se_idx = 7
+    freq_idx = 13
+    ntot_idx = 5
+    pval_idx = 11
 
     # parse out the fields
+    chrom = cols[chrom_idx]
+    pos = cols[pos_idx]
     snp_id = cols[snp_id_idx]
-    
-    # check if snp is in legend
-    if snp_id not in legend:
-        print 'SNP {} not in 1000G legend'.format(snp_id)
-        continue
-    
-    # get other information
-    chrom = legend[snp_id][0]
-    pos = legend[snp_id][1]
-    effect_allele = cols[eff_allele_idx].upper()
-    non_effect_allele = cols[noneff_allele_idx].upper()
-    beta = cols[beta_idx]
+    effect_allele = cols[effect_allele_idx]
+    non_effect_allele = cols[non_effect_allele_idx]
+    oddr = cols[or_idx]
     se = cols[se_idx]
-    pval = cols[pval_idx]
+    freq = cols[freq_idx]
     ntot = cols[ntot_idx]
+    pval = cols[pval_idx]
 
     # check for sanity of alleles
     if len(effect_allele) != 1 or len(non_effect_allele) != 1:
@@ -81,15 +63,12 @@ for line in sumstats_f:
         continue
 
     # check for sanity of beta
-    if not isfloat(beta):
-        print 'Removing SNP {} with OR and SE {}, {}'.format(snp_id,
-            obeta)
+    if oddr == 'NA' or se == 'NA':
+        print 'Removing SNP {} with beta and se {}, {}'.format(snp_id,oddr,se)
         continue
     
     # get z score
-    if not isfloat(se) or not isfloat(pval):
-        continue
-    zscore = float(beta)/float(se)
+    zscore = np.log(np.float(oddr)) / np.float(se)
     
     # check for sanity of z score
     if np.isnan(zscore) or np.isinf(zscore):
@@ -97,8 +76,8 @@ for line in sumstats_f:
         continue
 
     # construct the output line
-    # SNP CHR BP A1 A2 Z N P BETA SE
-    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+    # SNP CHR BP A1 A2 Z N FREQ OR SE P
+    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
         snp_id,
         chrom,
         pos,
@@ -106,9 +85,10 @@ for line in sumstats_f:
         non_effect_allele,
         zscore,
         ntot,
-        pval,
-        beta,
-        se
+        freq,
+        oddr,
+        se,
+        pval
     )
 
     # write the output

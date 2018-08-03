@@ -8,9 +8,9 @@ print "Huwenbo Shi"
 print "Command started at", cur_time
 
 # specify path to summary stats file here
-trait = 'CHILD_BMI_2015'
+trait = 'SCZ1_SWE_2013'
 root_dir = '/u/project/pasaniuc/pasaniucdata/DATA/All_Summary_Statistics/0_Raw'
-sumstats_fnm = root_dir+'/{}/{}.txt'.format(trait, trait)
+sumstats_fnm = root_dir+'/{}/{}.txt.gz'.format(trait, trait)
 out_fnm = './{}.txt.gz'.format(trait)
 
 # CHR POS RSID EA NEA BETA SE P N
@@ -32,11 +32,14 @@ print '{} SNPs in legend'.format(len(legend))
 out = gzip.open('./'+out_fnm, 'w')
 
 # write the header
-out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tP\tBETA\tSE\n')
+out.write('SNP\tCHR\tBP\tA1\tA2\tZ\tN\tP\tOR\tSE\tINFO\n')
+
+# sample size information
+ntot = 32143
 
 # iterate through the file
 flr = False
-sumstats_f = open(sumstats_fnm, 'r')
+sumstats_f = gzip.open(sumstats_fnm, 'r')
 for line in sumstats_f:
 
     # skip first line
@@ -48,13 +51,13 @@ for line in sumstats_f:
     cols = line.strip().split()
 
     # specify indices of the fields
-    snp_id_idx = 2
+    snp_id_idx = 0
     eff_allele_idx = 3
     noneff_allele_idx = 4
-    beta_idx = 5
-    se_idx = 6
-    pval_idx = 7
-    ntot_idx = 8
+    or_idx = 6
+    se_idx = 7
+    pval_idx = 8
+    info_idx = 5
 
     # parse out the fields
     snp_id = cols[snp_id_idx]
@@ -69,10 +72,10 @@ for line in sumstats_f:
     pos = legend[snp_id][1]
     effect_allele = cols[eff_allele_idx].upper()
     non_effect_allele = cols[noneff_allele_idx].upper()
-    beta = cols[beta_idx]
+    odd_r = cols[or_idx]
     se = cols[se_idx]
     pval = cols[pval_idx]
-    ntot = cols[ntot_idx]
+    info = cols[info_idx]
 
     # check for sanity of alleles
     if len(effect_allele) != 1 or len(non_effect_allele) != 1:
@@ -81,15 +84,15 @@ for line in sumstats_f:
         continue
 
     # check for sanity of beta
-    if not isfloat(beta):
+    if not isfloat(odd_r):
         print 'Removing SNP {} with OR and SE {}, {}'.format(snp_id,
-            obeta)
+            odd_r)
         continue
     
     # get z score
     if not isfloat(se) or not isfloat(pval):
         continue
-    zscore = float(beta)/float(se)
+    zscore = np.log(float(odd_r))/float(se)
     
     # check for sanity of z score
     if np.isnan(zscore) or np.isinf(zscore):
@@ -97,8 +100,8 @@ for line in sumstats_f:
         continue
 
     # construct the output line
-    # SNP CHR BP A1 A2 Z N P BETA SE
-    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+    # SNP CHR BP A1 A2 Z N P OR SE INFO
+    outline = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
         snp_id,
         chrom,
         pos,
@@ -107,8 +110,9 @@ for line in sumstats_f:
         zscore,
         ntot,
         pval,
-        beta,
-        se
+        odd_r,
+        se,
+        info
     )
 
     # write the output
